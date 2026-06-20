@@ -1,17 +1,18 @@
-import Router from "./router";
-import {YearProvider} from "@/layout/provider/year";
-import {AuthProvider} from "@/layout/provider/auth";
-import {InstitutionProvider} from "@/layout/provider/insitution";
+import AppRoutes from "@/routes/AppRoutes";
+import { YearProvider } from "@/features/master/store/YearProvider";
+import { AuthProvider } from "@/features/auth/store/AuthProvider";
+import { InstitutionProvider } from "@/features/institution/store/InstitutionProvider";
 
 const App = () => {
     return (
         <YearProvider>
             <AuthProvider>
                 <InstitutionProvider>
-                    <Router/>
+                    <AppRoutes />
                 </InstitutionProvider>
             </AuthProvider>
         </YearProvider>
     );
 };
+
 export default App;
