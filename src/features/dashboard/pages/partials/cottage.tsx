@@ -8,23 +8,12 @@ import { Badge, Card, Progress, Spinner } from "reactstrap";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { useYearContext } from "@/hooks/useYearContext";
 import { getRoleName } from "@/utils";
-import { get as getRooms } from "@/features/master/services/room";
+import { getRooms } from "@/features/master/services";
 import { studentBoarding } from "@/features/student/services/student";
-import type { RoomType, StudentBoardingType } from "@/types";
+import type { RoomType } from "@/features/master/types";
+import type {CottageStats} from "@/features/dashboard/types"
 
 moment.locale('id');
-
-interface CottageStats {
-    totalStudents: number;
-    maleStudents: number;
-    femaleStudents: number;
-    capacity: number;
-    programBreakdown: Array<{
-        programName: string;
-        count: number;
-    }>;
-    recentRegistrations: Array<StudentBoardingType>;
-}
 
 const Cottage = () => {
     const year = useYearContext();

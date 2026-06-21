@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Col, RSelect, Row } from "@/components";
 import { Controller, type UseFormReturn, useWatch } from "react-hook-form";
 import type { StudentVerificationFormType, OptionsType, UserType, InstitutionType, } from "@/types";
-import { get as getInstitution } from "@/features/institution/services/institution";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 
 interface StudentVerificationFormProps {
     user?: UserType
@@ -23,7 +23,7 @@ const StudentVerificationForm = ({ user, methods }: StudentVerificationFormProps
     ];
 
     useEffect(() => {
-        getInstitution<InstitutionType>().then((respInstitutions) => {
+        getInstitution<InstitutionType>({}).then((respInstitutions) => {
             const idBefore = user?.institutionId ? user.institutionId - 1 : null
             setInstitution(respInstitutions.find((item) => item.id === user?.institutionId))
             setInstitutionBefore(respInstitutions.find((item) => item.id === idBefore))

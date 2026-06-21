@@ -12,8 +12,8 @@ import { testWhatsAppMessage, testWhatsAppPdf, testPdfSignature } from "@/featur
 import { store as storeTransaction } from "@/features/payment/services/transaction"
 import { get as getPayments } from "@/features/payment/services/payment"
 import { get as getAccount } from "@/features/institution/services/account"
-import { get as getInstitution } from "@/features/institution/services/institution"
-import { get as getyear } from "@/features/master/services/year"
+import { get as getInstitution } from "@/features/institution/services/institution.services"
+import { get as getyear } from "@/features/master/services/year.services"
 import type { InstitutionAccountType, OptionsType, PaymentType, TransactionType } from "@/types";
 
 const IntegrationTest = () => {

@@ -1,101 +1,102 @@
-import type { ApiResponseInterface, AuthenticationType, VerifyPhoneType } from "@/types";
-import { apiCore } from "@/services/api";
-import type { UserType } from "@/types";
-import { RToast } from "@/components";
+import { apiCore } from '@/services/api';
+import { RToast } from '@/components';
+import type { ApiResponse, AuthenticationType, VerifyPhoneType } from '@/types';
+import type { UserType } from '@/types';
 
 const api = new apiCore();
 
-async function register(
-    params: Record<string, any>
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface RegisterParams {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    phone: string;
+    role: number;
+}
+
+export interface LoginParams {
+    email: string;
+    password: string;
+}
+
+export interface PhoneVerifyParams {
+    email: string;
+    otp: string;
+}
+
+export interface GetPhoneVerifyParams {
+    email: string;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function register(
+    params: RegisterParams
 ): Promise<AuthenticationType | undefined> {
-    const baseUrl = "/auth/register";
-    return await api.create(baseUrl, params, true).then(
-        (resp: ApiResponseInterface<any>) => {
-            if (resp.status === "success") {
-                api.setLoggedInUser(resp.result);
-                return {
-                    user: resp.result?.user,
-                    token: resp.result?.token,
-                } as AuthenticationType;
-            } else {
-                return undefined;
-            }
-        }
+    const resp = await api.create<AuthenticationType>('/auth/register', params as unknown as Record<string, unknown>, true);
+    if (resp.status === 'success' && resp.result) {
+        api.setLoggedInUser(resp.result);
+        return { user: resp.result.user, token: resp.result.token };
+    }
+    return undefined;
+}
+
+export async function login(
+    params: LoginParams
+): Promise<AuthenticationType | undefined> {
+    const resp = await api.create<AuthenticationType>('/auth/login', params as unknown as Record<string, unknown>, true);
+    if (resp.status === 'success' && resp.result) {
+        api.setLoggedInUser(resp.result);
+        return { user: resp.result.user, token: resp.result.token };
+    }
+    return undefined;
+}
+
+export async function storeVerifyPhone(
+    params: PhoneVerifyParams
+): Promise<AuthenticationType | undefined> {
+    const resp = await api.create<AuthenticationType>(
+        '/auth/phone-verify',
+        params as unknown as Record<string, unknown>,
+        true
     );
+    if (resp.status === 'success' && resp.result) {
+        api.setLoggedInUser(resp.result);
+        return resp.result;
+    }
+    return undefined;
 }
 
-async function login(
-    params: Record<string, any>
-): Promise<AuthenticationType | undefined> {
-    const baseUrl = "/auth/login";
-    return await api
-        .create<AuthenticationType>(baseUrl, params, true)
-        .then((resp: ApiResponseInterface<AuthenticationType>) => {
-            if (resp.status === "success") {
-                api.setLoggedInUser(resp.result);
-                return {
-                    user: resp.result?.user,
-                    token: resp.result?.token,
-                } as AuthenticationType;
-            } else {
-                return undefined;
-            }
-        });
-}
-
-async function storeVerifyPhone(
-    params: Record<string, any>
-): Promise<AuthenticationType | undefined> {
-    const baseUrl = "/auth/phone-verify";
-    return await api
-        .create<AuthenticationType>(baseUrl, params, true)
-        .then((resp: ApiResponseInterface<AuthenticationType>) => {
-            if (resp.status === "success") {
-                api.setLoggedInUser(resp.result);
-                return resp.result;
-            } else {
-                return undefined;
-            }
-        });
-}
-
-async function getVerifyPhone(
-    params: Record<string, any>
+export async function getVerifyPhone(
+    params: GetPhoneVerifyParams
 ): Promise<VerifyPhoneType | undefined> {
-    const baseUrl = "/auth/get-phone-verify";
-    return await api
-        .create<VerifyPhoneType>(baseUrl, params, true)
-        .then((resp) => {
-            if (resp.status === "success") {
-                return resp.result;
-            } else {
-                return;
-            }
-        });
+    const resp = await api.create<VerifyPhoneType>(
+        '/auth/get-phone-verify',
+        params as unknown as Record<string, unknown>,
+        true
+    );
+    return resp.status === 'success' ? resp.result : undefined;
 }
 
-async function profile(): Promise<UserType | undefined> {
-    const baseUrl = "/auth/profile";
-    return await api.get<UserType>(baseUrl, {}, false).then((resp) => {
-        if (resp.result) {
-            return resp.result;
-        } else {
-            RToast(resp.statusMessage);
-            setTimeout(() => {
-                api.setLoggedInUser(undefined);
-            }, 2000);
-        }
-    });
+export async function profile(): Promise<UserType | undefined> {
+    const resp = await api.get<UserType>('/auth/profile', {}, false);
+    if (resp.result) {
+        return resp.result;
+    }
+    RToast(resp.statusMessage);
+    setTimeout(() => api.setLoggedInUser(undefined), 2000);
+    return undefined;
 }
 
-async function logout(): Promise<void> {
-    const api = new apiCore();
-    const baseUrl = "/auth/logout";
-    return await api.create(baseUrl, {}, false).then((resp) => {
-        if (resp.status === "success") {
-            api.setLoggedInUser(undefined);
-        }
-    });
+export async function logout(): Promise<void> {
+    const resp: ApiResponse<unknown> = await api.create('/auth/logout', {}, false);
+    if (resp.status === 'success') {
+        api.setLoggedInUser(undefined);
+    }
 }
-
-export { register, login, storeVerifyPhone, getVerifyPhone, profile, logout };

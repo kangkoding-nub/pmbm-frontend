@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getPaymentReport } from "@/features/report/services/report.ts";
 import { formatCurrency } from "@/utils";
-import { show as showInstitution } from "@/features/institution/services/institution.ts";
+import { show as showInstitution } from "@/features/institution/services/institution.services";
 import PrintLayout from "@/features/report/components/PrintLayout.tsx";
 import moment from "moment";
 
@@ -36,7 +36,7 @@ const PaymentReportPrint = () => {
             setLoading(true);
             try {
                 if (institutionId) {
-                    await showInstitution({ id: institutionId }).then((resp) => {
+                    await showInstitution(Number(institutionId)).then((resp) => {
                         setInstitutionName(resp?.surname || "");
                     });
                 }

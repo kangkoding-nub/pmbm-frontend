@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, ModalBody, ModalHeader, Form, Label, Button, Spinner, FormGroup } from "reactstrap";
 import { create as createAnnouncement, update as updateAnnouncement } from "@/features/announcement/services/announcement";
-import { get as getInstitution } from "@/features/institution/services/institution";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 import { get as getUser } from "@/features/user/services/user";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { Icon, RSelect } from "@/components";

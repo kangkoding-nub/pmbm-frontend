@@ -5,7 +5,7 @@ import { getItemReport } from "@/features/report/services/report.ts";
 import { formatCurrency } from "@/utils";
 import type { ProductType } from "@/types";
 import PrintLayout from "@/features/report/components/PrintLayout.tsx";
-import { show as showInstitution } from "@/features/institution/services/institution.ts";
+import { show as showInstitution } from "@/features/institution/services/institution.services";
 
 const InvoiceItemReportPrint = () => {
     const [searchParams] = useSearchParams();
@@ -23,7 +23,7 @@ const InvoiceItemReportPrint = () => {
             setLoading(true);
             try {
                 if (institutionId) {
-                    await showInstitution({ id: institutionId }).then((resp) => {
+                    await showInstitution(Number(institutionId)).then((resp) => {
                         setInstitutionName(resp?.surname || "");
                     });
                 }

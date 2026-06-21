@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { studentBoarding } from '@/features/student/services/student';
-import { get as getInstitution } from '@/features/institution/services/institution';
+import { get as getInstitution } from '@/features/institution/services/institution.services';
 import { get as getBoarding } from '@/features/master/services/boarding';
 import type { StudentBoardingType, OptionsType } from '@/types';
 import moment from 'moment';

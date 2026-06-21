@@ -16,8 +16,8 @@ import {
     ImageContainer,
 } from "@/components";
 import { Link, useParams } from "react-router-dom";
-import type { InstitutionType } from "@/types";
-import { show as showInstitution } from "@/features/institution/services/institution"
+import type { InstitutionType } from "@/features/institution/types";
+import { showInstitution } from "@/features/institution/services"
 import Activity from "./activity";
 import Program from "@/features/institution/pages/detail/program";
 import Period from "@/features/institution/pages/detail/period";
@@ -37,7 +37,7 @@ const InstitutionDetails: React.FC = () => {
             institutionId = Number(id);
         }
         if (institutionId !== undefined) {
-            showInstitution({ id: institutionId }).then((resp) => {
+            showInstitution(institutionId).then((resp) => {
                 if (resp) setInstitution(resp)
             })
         }

@@ -7,10 +7,10 @@ import React, {useEffect, useState} from "react";
 import type {ColumnType, InstitutionPeriodFormType, InstitutionPeriodType} from "@/types";
 import {ButtonGroup, Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {
-    get as getPeriod,
-    destroy as destroyPeriod,
-    store as storePeriod,
-    update as updatePeriod
+    getPeriods,
+    deletePeriod,
+    storePeriod,
+    updatePeriod
 } from "@/features/institution/services/period";
 import {useYearContext} from "@/hooks/useYearContext";
 import moment from "moment/moment";
@@ -80,7 +80,7 @@ const PeriodComponent = ({institutionId, modal, setModal} : PeriodComponentProps
                     </Button>
                     <Button outline color="danger" onClick={async () => {
                         setLoading(row?.id);
-                        await destroyPeriod(row?.id)
+        await deletePeriod(row.id as number)
                             .then(() => setLoadData(true))
                             .finally(() => setLoading(false));
                     }}>
@@ -131,7 +131,7 @@ const PeriodComponent = ({institutionId, modal, setModal} : PeriodComponentProps
     };
 
     useEffect(() => {
-        getPeriod<InstitutionPeriodType>({list: 'table', yearId: year?.id, institutionId: institutionId}).then((resp) => {
+        getPeriods({list: 'table', yearId: year?.id, institutionId: institutionId}).then((resp) => {
             if (resp) setPeriods(resp)
         }).finally(() => setLoadData(false))
     }, [institutionId, year, loadData]);

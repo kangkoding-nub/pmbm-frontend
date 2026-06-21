@@ -3,7 +3,7 @@ import { Button, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Icon, RSelect } from "@/components";
 import { store as storeWhatsapp, update as updateWhatsapp } from "@/features/setting/services/whatsapp";
-import { get as getInstitutions } from "@/features/institution/services/institution";
+import { get as getInstitutions } from "@/features/institution/services/institution.services";
 import type { OptionsType, WhatsappType } from "@/types";
 import {useAuthContext} from "@/hooks/useAuthContext";
 

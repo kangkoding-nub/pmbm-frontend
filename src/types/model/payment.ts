@@ -1,4 +1,5 @@
-import type {InstitutionType, StudentPersonalType, UserType} from "@/types";
+import type { StudentPersonalType, UserType } from "@/types";
+import type { InstitutionType } from "@/features/institution/types";
 
 export type PaymentChannelType = {
     group: string,

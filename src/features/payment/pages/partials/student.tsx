@@ -29,9 +29,9 @@ const Student = () => {
     const [invoices, setInvoices] = useState<InvoiceType[]>()
     const [loadData, setLoadData] = useState(true)
     const handlePayment = (invoice: InvoiceType) => {
-        storePayment({ reference: invoice.reference, amount: invoice.amount, userId: invoice.userId }).then((resp) => {
+        storePayment({ reference: invoice.reference ?? '', amount: invoice.amount }).then((resp) => {
             if (resp.status === 'success') {
-                const snapToken = resp.result?.snap_token;
+                const snapToken = (resp.result as any)?.snap_token;
 
                 if (snapToken) {
                     // Use Midtrans Snap popup

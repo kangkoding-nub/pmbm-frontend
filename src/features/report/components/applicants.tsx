@@ -17,9 +17,9 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import { useInstitutionContext } from "@/hooks/useInstitutionContext";
 import { Badge, Button, FormGroup, Label, Row, Col } from "reactstrap";
 import { getApplicantReport, exportApplicantReport } from "@/features/report/services/report.ts";
-import { get as getInstitutions } from "@/features/institution/services/institution.ts";
+import { get as getInstitutions } from "@/features/institution/services/institution.services";
 import { get as getBoardings } from "@/features/master/services/boarding.ts";
-import { get as getProgram } from "@/features/institution/services/program.ts";
+import { get as getProgram } from "@/features/institution/services/program.service";
 import type { ColumnType, OptionsType } from "@/types";
 import { getGender } from "@/utils";
 

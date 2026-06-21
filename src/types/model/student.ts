@@ -1,4 +1,6 @@
-import type { BoardingType, InstitutionPeriodType, InstitutionProgramType, InstitutionType, OptionsType, RoomType } from "@/types";
+import type { BoardingType, InstitutionPeriodType, InstitutionProgramType, OptionsType } from "@/types";
+import type { InstitutionType } from "@/features/institution/types";
+import type { RoomType } from "@/features/master/types";
 
 export type StudentPersonalType = {
     id?: number

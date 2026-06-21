@@ -1,18 +1,69 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, StudentVerificationType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, StudentVerificationType } from '@/types';
+
 const api = new apiCore();
-async function get(params: Record<string, any> = {}, notification: boolean = false): Promise<StudentVerificationType[]> {
-    const result = await api.get<StudentVerificationType[]>("/student/verification", params, notification).then((v: ApiResponseInterface<StudentVerificationType[]>) => v.result);
-    return result !== undefined ? result : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetVerificationParams {
+    userId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}, notification: boolean = true) {
-    const result = await api.create<StudentVerificationType>("/student/verification", params, notification).then((r) => r.result);
-    return result !== undefined ? result : undefined;
+
+export interface StoreVerificationParams {
+    twins?: number;
+    twinsName?: string;
+    graduate?: number;
+    domicile?: number;
+    student?: number;
+    teacherSon?: number;
+    sibling?: number;
+    siblingInstitution?: number;
+    siblingName?: string;
+    userId?: number;
+    id?: number;
 }
-async function update(params: Record<string, any> = {}, notification: boolean = true) {
-    return await api.update<StudentVerificationType>(`/student/verification/${params.id}`, params, notification).then((r) => r.result);
+
+export interface UpdateVerificationParams extends Partial<StoreVerificationParams> {
+    id?: number;
+    userId?: number;
 }
-async function destroy(id: number | undefined) {
-    return await api.delete(`/student/verification/${id}`, true).then((r) => r);
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getVerification(
+    params: GetVerificationParams = {}
+): Promise<StudentVerificationType[]> {
+    const resp = await api.get<StudentVerificationType[]>('/student/verification', params);
+    return resp.result ?? [];
 }
-export { get, store, update, destroy };
+
+export async function storeVerification(
+    params: StoreVerificationParams,
+    notification = true
+): Promise<StudentVerificationType | undefined> {
+    const resp = await api.create<StudentVerificationType>('/student/verification', params as unknown as Record<string, unknown>, notification);
+    return resp.result;
+}
+
+export async function updateVerification(
+    params: UpdateVerificationParams,
+    notification = true
+): Promise<ApiResponse<StudentVerificationType>> {
+    return api.update<StudentVerificationType>(`/student/verification/${params.id}`, params as unknown as Record<string, unknown>, notification);
+}
+
+export async function deleteVerification(id: number): Promise<ApiResponse<unknown>> {
+    return api.delete(`/student/verification/${id}`, true);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getVerification */ export const get = getVerification;
+/** @deprecated use storeVerification */ export const store = storeVerification;
+/** @deprecated use updateVerification */ export const update = updateVerification;

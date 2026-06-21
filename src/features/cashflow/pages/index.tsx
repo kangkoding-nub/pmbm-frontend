@@ -132,10 +132,10 @@ const Cashflow = () => {
 
     useEffect(() => {
         const fetchData = () => {
-            getTransaction<TransactionType>(params()).then((resp) => {
+            getTransaction(params()).then((resp) => {
                 setTransactions(resp)
             }).finally(() => setLoadData(false))
-            dashboardTransaction<TransactionDashboardType>(params()).then((resp) => setDashboard(resp))
+            dashboardTransaction(params()).then((resp) => setDashboard(resp as TransactionDashboardType | undefined))
         }
         if (loadData) fetchData()
     }, [loadData, params])

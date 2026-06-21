@@ -1,4 +1,4 @@
-import type { InstitutionType } from "@/types";
+import type { InstitutionType } from "@/features/institution/types";
 
 export type WhatsappType = {
     id?: number,

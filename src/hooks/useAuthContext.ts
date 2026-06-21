@@ -1,16 +1,18 @@
-import { createContext, use } from "react";
-import type { UserType } from "@/types";
+import { createContext, use, type Dispatch, type SetStateAction } from 'react';
+import type { UserType } from '@/types';
 
 interface AuthContextInterface {
     isLogged: boolean;
-    setIsLogged?: any;
+    setIsLogged: Dispatch<SetStateAction<boolean>>;
     user: UserType | undefined;
-    setUser?: any;
+    setUser: Dispatch<SetStateAction<UserType | undefined>>;
 }
 
 const INIT: AuthContextInterface = {
     isLogged: false,
+    setIsLogged: () => undefined,
     user: undefined,
+    setUser: () => undefined,
 };
 
 export const AuthContext = createContext<AuthContextInterface>(INIT);
@@ -18,7 +20,7 @@ export const AuthContext = createContext<AuthContextInterface>(INIT);
 export function useAuthContext() {
     const context = use(AuthContext);
     if (!context) {
-        throw new Error("useAuthContext must be used within an AuthContext");
+        throw new Error('useAuthContext must be used within an AuthContext');
     }
     return context;
 }

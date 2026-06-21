@@ -2,8 +2,8 @@ import { useAuthContext } from "@/hooks/useAuthContext";
 import Administrator from "@/features/dashboard/pages/partials/administrator";
 import Treasurer from "@/features/dashboard/pages/partials/treasurer";
 import Student from "@/features/dashboard/pages/partials/student";
-import Operator from "@/features/dashboard/pages/partials/operator";
-import Guest from "@/features/dashboard/pages/partials/guest";
+import Operator from "@/features/dashboard/components/operator";
+import { Landing } from "@/features/guest/components";
 import Cottage from "@/features/dashboard/pages/partials/cottage";
 import Teller from "@/features/dashboard/pages/partials/teller";
 
@@ -23,7 +23,7 @@ const Dashboard = () => {
         case 6:
             return <Teller/>
         default:
-            return <Guest />
+            return <Landing />
     }
 }
 export default Dashboard;

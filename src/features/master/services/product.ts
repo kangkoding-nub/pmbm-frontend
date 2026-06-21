@@ -1,11 +1,68 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, ProductType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, ProductType } from '@/types';
+
 const api = new apiCore();
-async function get<T>(params: Record<string, any> = {}, notification = false): Promise<T[]> {
-  const r = await api.get<T[]>("/master/product", params, notification).then((v: ApiResponseInterface<T[]>) => v.result);
-  return r !== undefined ? r : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetProductsParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}) { return await api.create<ProductType>("/master/product", params, true).then((r) => r); }
-async function update(params: Record<string, any> = {}) { return await api.update<ProductType>(`/master/product/${params.id}`, params, true).then((r) => r); }
-async function destroy(id: number | undefined) { return await api.delete(`/master/product/${id}`, true).then((r) => r); }
-export { get, store, update, destroy };
+
+export interface StoreProductParams {
+    id?: number;
+    yearId?: number;
+    institutionId?: number;
+    name: string;
+    surname?: string;
+    price?: number | null;
+    gender?: number;
+    programId?: number | null;
+    isBoarding?: number | null;
+    boardingId?: number | null;
+    createdBy?: number;
+    updatedBy?: number;
+}
+
+export interface UpdateProductParams extends Partial<StoreProductParams> {
+    id?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getProducts(
+    params: GetProductsParams = {}
+): Promise<ProductType[]> {
+    const resp = await api.get<ProductType[]>('/master/product', params);
+    return resp.result ?? [];
+}
+
+export async function storeProduct(
+    params: StoreProductParams
+): Promise<ApiResponse<ProductType>> {
+    return api.create<ProductType>('/master/product', params as unknown as Record<string, unknown>, true);
+}
+
+export async function updateProduct(
+    params: UpdateProductParams
+): Promise<ApiResponse<ProductType>> {
+    return api.update<ProductType>(`/master/product/${params.id}`, params as unknown as Record<string, unknown>, true);
+}
+
+export async function deleteProduct(id: number | undefined): Promise<ApiResponse<unknown>> {
+    return api.delete(`/master/product/${id}`, true);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getProducts */ export function get<T = ProductType>(params: GetProductsParams = {}): Promise<T[]> { return getProducts(params) as unknown as Promise<T[]>; }
+/** @deprecated use storeProduct */ export const store = storeProduct;
+/** @deprecated use updateProduct */ export const update = updateProduct;
+/** @deprecated use deleteProduct */ export const destroy = deleteProduct;

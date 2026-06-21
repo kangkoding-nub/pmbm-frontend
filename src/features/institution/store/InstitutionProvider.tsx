@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
-import type { InstitutionType } from "@/types";
-import { show as showInstitution } from "@/features/institution/services/institution";
+import type { InstitutionType } from "@/features/institution/types";
+import { showInstitution } from "@/features/institution/services/institution.services";
 import { InstitutionContext } from "@/hooks/useInstitutionContext";
 import { Loading } from "@/components";
 import { useAuthContext } from "@/hooks/useAuthContext";
@@ -16,7 +16,7 @@ export const InstitutionProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             try {
                 if (user?.role && ROLE_INSTITUTION.includes(user.role)) {
-                    await showInstitution({ id: user?.institutionId }).then((resp) => {
+                    await showInstitution(user.institutionId as number).then((resp) => {
                         setInstitution(resp);
                     });
                 }

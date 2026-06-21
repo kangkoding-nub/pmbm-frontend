@@ -1,11 +1,62 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, BoardingType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, BoardingType } from '@/types';
+
 const api = new apiCore();
-async function get<T>(params: Record<string, any> = {}, notification = false): Promise<T[]> {
-  const r = await api.get<T[]>("/master/boarding", params, notification).then((v: ApiResponseInterface<T[]>) => v.result);
-  return r !== undefined ? r : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetBoardingsParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}) { return await api.create<BoardingType>("/master/boarding", params, true).then((r) => r); }
-async function update(params: Record<string, any> = {}) { return await api.update<BoardingType>(`/master/boarding/${params.id}`, params, true).then((r) => r); }
-async function destroy(id: number | undefined) { return await api.delete(`/master/boarding/${id}`, true).then((r) => r); }
-export { get, store, update, destroy };
+
+export interface StoreBoardingParams {
+    id?: number;
+    yearId?: number;
+    institutionId?: number;
+    name: string;
+    surname?: string;
+    description?: string;
+}
+
+export interface UpdateBoardingParams extends Partial<StoreBoardingParams> {
+    id?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getBoardings(
+    params: GetBoardingsParams = {}
+): Promise<BoardingType[]> {
+    const resp = await api.get<BoardingType[]>('/master/boarding', params);
+    return resp.result ?? [];
+}
+
+export async function storeBoarding(
+    params: StoreBoardingParams
+): Promise<ApiResponse<BoardingType>> {
+    return api.create<BoardingType>('/master/boarding', params as unknown as Record<string, unknown>, true);
+}
+
+export async function updateBoarding(
+    params: UpdateBoardingParams
+): Promise<ApiResponse<BoardingType>> {
+    return api.update<BoardingType>(`/master/boarding/${params.id}`, params as unknown as Record<string, unknown>, true);
+}
+
+export async function deleteBoarding(id: number | undefined): Promise<ApiResponse<unknown>> {
+    return api.delete(`/master/boarding/${id}`, true);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getBoardings */ export function get<T = BoardingType>(params: GetBoardingsParams = {}): Promise<T[]> { return getBoardings(params) as unknown as Promise<T[]>; }
+/** @deprecated use storeBoarding */ export const store = storeBoarding;
+/** @deprecated use updateBoarding */ export const update = updateBoarding;
+/** @deprecated use deleteBoarding */ export const destroy = deleteBoarding;

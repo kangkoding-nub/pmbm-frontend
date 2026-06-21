@@ -1,69 +1,67 @@
-import { apiCore } from "@/services/api";
+import { apiCore } from '@/services/api';
+import type { ApiResponse } from '@/types';
+
+const api = new apiCore();
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface SendWhatsAppParams {
+    frontend_url: string;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
 
 /**
- * Download registration proof PDF
+ * Download registration proof PDF and trigger browser download.
  */
-async function downloadRegistrationProof(): Promise<void> {
+export async function downloadRegistrationProof(): Promise<void> {
+    const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+
     try {
-        const api = new apiCore();
-
-        const frontendUrl = `${window.location.protocol}//${window.location.host}`;
-
         const response = await api.getFile(
-            `/student/registration-proof?frontend_url=${encodeURIComponent(frontendUrl)}`
+            '/student/registration-proof',
+            { frontend_url: frontendUrl }
         );
 
         const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
 
-        const contentDisposition = response.headers["content-disposition"];
-        let filename = "bukti-pendaftaran.pdf";
-
+        const contentDisposition = response.headers['content-disposition'] as string | undefined;
+        let filename = 'bukti-pendaftaran.pdf';
         if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
-            if (filenameMatch && filenameMatch[1]) {
-                filename = filenameMatch[1];
-            }
+            const match = contentDisposition.match(/filename="?(.+?)"?$/i);
+            if (match?.[1]) filename = match[1];
         }
 
-        link.setAttribute("download", filename);
+        link.setAttribute('download', filename);
         document.body.appendChild(link);
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
-    } catch (error: any) {
-        console.error("Error downloading registration proof:", error);
-
-        if (error.response && error.response.data instanceof Blob) {
-            const text = await error.response.data.text();
-            try {
-                const errorData = JSON.parse(text);
-                throw new Error(
-                    errorData.statusMessage || "Gagal mengunduh bukti pendaftaran"
-                );
-            } catch {
-                throw new Error("Gagal mengunduh bukti pendaftaran");
-            }
-        } else {
-            throw new Error(
-                error.response?.data?.statusMessage ||
-                    "Gagal mengunduh bukti pendaftaran"
-            );
-        }
+    } catch (error: unknown) {
+        const msg =
+            error instanceof Error
+                ? error.message
+                : 'Gagal mengunduh bukti pendaftaran';
+        throw new Error(msg);
     }
 }
 
-async function sendWhatsAppRegistrationProof(
+/**
+ * Send registration proof PDF via WhatsApp to the student.
+ */
+export async function sendWhatsAppRegistrationProof(
     userId: number | string
-): Promise<any> {
-    const api = new apiCore();
+): Promise<ApiResponse<unknown>> {
     const frontendUrl = `${window.location.protocol}//${window.location.host}`;
     return api.create(
         `/student/${userId}/send-whatsapp`,
-        { frontend_url: frontendUrl },
+        { frontend_url: frontendUrl } as unknown as Record<string, unknown>,
         false
     );
 }
-
-export { downloadRegistrationProof, sendWhatsAppRegistrationProof };

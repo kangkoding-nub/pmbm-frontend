@@ -1,5 +1,5 @@
 import { createContext, use } from "react";
-import type { InstitutionType } from "@/types";
+import type { InstitutionType } from "@/features/institution/types";
 
 export const InstitutionContext = createContext<InstitutionType | undefined>(undefined);
 

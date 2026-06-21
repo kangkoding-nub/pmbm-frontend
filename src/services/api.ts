@@ -1,324 +1,252 @@
-import axios, { type AxiosResponse, AxiosError } from "axios";
-import type { ApiResponseInterface, AuthenticationType } from "@/types";
-import { RToast } from "@/components";
+import { AxiosError, type AxiosResponse } from 'axios';
+import { axiosInstance } from '@/lib/axios';
+import { getToken, setToken, removeToken, isAuthenticated } from '@/lib/auth-token';
+import { RToast } from '@/components';
+import type { ApiResponse, ApiParams } from '@/types';
+import type { AuthenticationType } from '@/types';
 
-axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.headers.common["Content-Type"] =
-    "application/x-www-form-urlencoded";
-axios.defaults.headers.common["ngrok-skip-browser-warning"] = "true";
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+function buildUrl(url: string, params?: ApiParams): string {
+    if (!params) return url;
+    const entries = Object.entries(params).filter(
+        ([, v]) => v !== undefined && v !== null
+    ) as [string, string | number | boolean][];
+    if (entries.length === 0) return url;
+    const qs = new URLSearchParams(
+        entries.map(([k, v]) => [k, String(v)])
+    ).toString();
+    return `${url}?${qs}`;
+}
 
-class apiCore {
-    constructor() {
-        const token = this.getLoggedInUser();
-        if (token) {
-            this.setAuthorization(token);
+function buildFormData(data: Record<string, unknown>): FormData {
+    const fd = new FormData();
+    for (const [key, value] of Object.entries(data)) {
+        if (Array.isArray(value)) {
+            for (const item of value) {
+                fd.append(`${key}[]`, item === undefined || item === null ? '' : String(item));
+            }
+        } else {
+            fd.append(key, value === undefined || value === null ? '' : (value as string | Blob));
         }
     }
+    return fd;
+}
+
+
+class apiCore {
 
     async get<T>(
         url: string,
-        params: Record<string, string>,
-        notification: boolean = false
-    ): Promise<ApiResponseInterface<T>> {
-        if (Object.keys(params).length > 0) {
-            url +=
-                "?" +
-                Object.keys(params)
-                    .map((key) => `${key}=${params[key]}`)
-                    .join("&");
+        params: ApiParams = {},
+        notification = false
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.get<ApiResponse<T>>(buildUrl(url, params));
+            return this.handleResponse<T>(response, notification);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notification);
         }
-        const response: AxiosResponse | AxiosError = await axios
-            .get(`${url}`)
-            .catch((error) => error);
-        return this.handleResponse(response, notification);
     }
 
-    getFile = async (
+    async getFile(
         url: string,
-        params?: Record<string, string>
-    ): Promise<AxiosResponse> => {
-        const queryString = params
-            ? new URLSearchParams(params).toString()
-            : "";
-        const response = await axios
-            .get(`${url}?${queryString}`, {
-                responseType: "blob",
-                headers: {
-                    ...axios.defaults.headers.common,
-                },
-            })
-            .catch(async (error: AxiosError) => {
-                // Blob responses can contain JSON error messages — parse and re-throw
-                if (
-                    error.response &&
-                    error.response.data instanceof Blob
-                ) {
-                    const text = await error.response.data.text();
-                    try {
-                        const json = JSON.parse(text);
-                        throw new Error(
-                            json.statusMessage ||
-                                json.message ||
-                                "Terjadi kesalahan"
-                        );
-                    } catch (parseErr) {
-                        if (parseErr instanceof SyntaxError)
-                            throw new Error(text);
-                        throw parseErr;
-                    }
-                }
-                throw error;
+        params?: ApiParams
+    ): Promise<AxiosResponse<Blob>> {
+        try {
+            const response = await axiosInstance.get<Blob>(buildUrl(url, params), {
+                responseType: 'blob',
             });
-        return response as AxiosResponse;
-    };
+            return response;
+        } catch (error) {
+            const axiosErr = error as AxiosError;
+            if (axiosErr.response?.data instanceof Blob) {
+                const text = await axiosErr.response.data.text();
+                try {
+                    const json = JSON.parse(text) as { statusMessage?: string; message?: string };
+                    throw new Error(json.statusMessage ?? json.message ?? 'Terjadi kesalahan');
+                } catch (parseErr) {
+                    if (parseErr instanceof SyntaxError) throw new Error(text);
+                    throw parseErr;
+                }
+            }
+            throw axiosErr;
+        }
+    }
 
-    getMultiple = (
+    getMultiple(
         urls: string[],
-        params?: Record<string, string>
-    ): Promise<AxiosResponse[]> => {
-        const reqs: Promise<AxiosResponse>[] = [];
-        let queryString = "";
-        if (params) {
-            queryString = params
-                ? new URLSearchParams(params).toString()
-                : "";
-        }
+        params?: ApiParams
+    ): Promise<AxiosResponse[]> {
+        return Promise.all(
+            urls.map((url) => axiosInstance.get(buildUrl(url, params)))
+        );
+    }
 
-        for (const url of urls) {
-            reqs.push(axios.get(`${url}?${queryString}`));
-        }
-        return axios.all(reqs);
-    };
 
     async create<T>(
         url: string,
-        data: Record<string, any>,
+        data: Record<string, unknown>,
         notify: boolean
-    ): Promise<ApiResponseInterface<T>> {
-        const response: AxiosResponse | AxiosError = await axios
-            .post(url, data)
-            .catch((error: AxiosError) => error);
-        return this.handleResponse<T>(response, notify);
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.post<ApiResponse<T>>(url, data);
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
+        }
     }
-
-    updatePatch = (url: string, data: any): Promise<AxiosResponse> => {
-        return axios.patch(url, data);
-    };
 
     async update<T>(
         url: string,
-        data: any,
+        data: Record<string, unknown>,
         notify: boolean
-    ): Promise<ApiResponseInterface<T>> {
-        const response: AxiosResponse | AxiosError = await axios
-            .put(url, data)
-            .catch((error: AxiosError) => error);
-        return this.handleResponse<T>(response, notify);
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.put<ApiResponse<T>>(url, data);
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
+        }
     }
 
-    delete = async (url: string, message: boolean): Promise<any> => {
-        const response = await axios
-            .delete(url)
-            .catch((error: AxiosError) => error);
-        return this.handleResponse(response, message);
-    };
+    async updatePatch<T>(
+        url: string,
+        data: Record<string, unknown>,
+        notify = false
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.patch<ApiResponse<T>>(url, data);
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
+        }
+    }
+
+    async delete<T = unknown>(
+        url: string,
+        notify: boolean
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.delete<ApiResponse<T>>(url);
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
+        }
+    }
 
     async createWithFile<T>(
         url: string,
-        data: any,
+        data: Record<string, unknown>,
         notify: boolean
-    ): Promise<ApiResponseInterface<T>> {
-        const formData = new FormData();
-        for (const k in data) {
-            if (Array.isArray(data[k])) {
-                for (const key in data[k]) {
-                    const value =
-                        data[k][key] === undefined ? "" : data[k][key];
-                    formData.append(`${k}[]`, value);
-                }
-            } else {
-                const value = data[k] === undefined ? "" : data[k];
-                formData.append(k, value);
-            }
+    ): Promise<ApiResponse<T>> {
+        try {
+            const response = await axiosInstance.post<ApiResponse<T>>(
+                url,
+                buildFormData(data),
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
         }
-        const config = {
-            headers: {
-                ...axios.defaults.headers.common,
-                "content-type": "multipart/form-data",
-            },
-        };
-        const result = await axios
-            .post(url, formData, config)
-            .catch((error: AxiosError) => error);
-        return this.handleResponse<T>(result, notify);
     }
 
     async updateWithFile<T>(
         url: string,
-        data: any,
+        data: Record<string, unknown>,
         notify: boolean
-    ): Promise<ApiResponseInterface<T>> {
-        const formData = new FormData();
-        for (const k in data) {
-            if (Array.isArray(data[k])) {
-                for (const key in data[k]) {
-                    const value =
-                        data[k][key] === undefined ? "" : data[k][key];
-                    formData.append(`${k}[]`, value);
-                }
-            } else {
-                const value = data[k] === undefined ? "" : data[k];
-                formData.append(k, value);
-            }
+    ): Promise<ApiResponse<T>> {
+        const fd = buildFormData(data);
+        fd.append('_method', 'put');
+        try {
+            const response = await axiosInstance.post<ApiResponse<T>>(
+                url,
+                fd,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            return this.handleResponse<T>(response, notify);
+        } catch (error) {
+            return this.handleResponse<T>(error as AxiosError, notify);
         }
-        formData.append("_method", "put");
-        const config = {
-            headers: {
-                ...axios.defaults.headers.common,
-                "content-type": "multipart/form-data",
-            },
-        };
-        const result = await axios
-            .post(url, formData, config)
-            .catch((error: AxiosError) => error);
-        return this.handleResponse<T>(result, notify);
     }
 
-    isUserAuthenticated = (): boolean => {
-        return this.getLoggedInUser() !== undefined;
-    };
+    isUserAuthenticated(): boolean {
+        return isAuthenticated();
+    }
 
-    setLoggedInUser = (session: AuthenticationType | undefined) => {
-        if (session?.token !== undefined) {
-            localStorage.setItem("__PMB_TOKEN_SERVICE__", session.token);
+    setLoggedInUser(session: AuthenticationType | undefined): void {
+        if (session?.token) {
+            setToken(session.token);
         } else {
-            localStorage.removeItem("__PMB_TOKEN_SERVICE__");
+            removeToken();
         }
-    };
+    }
 
-    getLoggedInUser = (): AuthenticationType | undefined => {
-        const token = localStorage.getItem("__PMB_TOKEN_SERVICE__");
-        return token ? { token: token } : undefined;
-    };
-
-    setUserInSession = (modifiedUser: AuthenticationType) => {
-        const userInfo = localStorage.getItem("__PMB_TOKEN_SERVICE__");
-        if (userInfo) {
-            this.setLoggedInUser(modifiedUser);
-        }
-    };
-
-    setAuthorization = (auth: AuthenticationType | null): void => {
-        if (auth?.token) {
-            axios.defaults.headers.common["Authorization"] =
-                "Bearer " + auth.token;
-        } else {
-            delete axios.defaults.headers.common["Authorization"];
-        }
-    };
+    getLoggedInUser(): AuthenticationType | undefined {
+        const token = getToken();
+        return token ? { token } : undefined;
+    }
 
     handleResponse<T>(
-        resp: AxiosResponse | AxiosError,
+        resp: AxiosResponse<ApiResponse<T>> | AxiosError,
         notification: boolean
-    ): ApiResponseInterface<T> {
-        const { code, data } = resp as AxiosResponse & AxiosError;
-        if (data) {
-            const { status, statusMessage, result } = data;
-            if (status === "success") {
-                if (statusMessage !== "" && notification)
-                    RToast(statusMessage, "success");
-                return {
-                    status: "success",
-                    statusMessage: statusMessage,
-                    result: result as T,
-                };
-            } else {
-                if (statusMessage !== "" && notification)
-                    RToast(statusMessage);
-                return {
-                    status: "error",
-                    statusMessage: statusMessage,
-                    result: result as T,
-                };
+    ): ApiResponse<T> {
+        // Happy path: HTTP 2xx, server returned a valid envelope
+        if (!(resp instanceof AxiosError)) {
+            const { status, statusMessage, result } = resp.data;
+            if (status === 'success') {
+                if (statusMessage && notification) RToast(statusMessage, 'success');
+                return { status: 'success', statusMessage, result };
             }
-        } else {
-            if (code === "ERR_NETWORK") {
-                if (notification)
-                    RToast("Aplikasi tidak terhubung ke server.");
-                return {
-                    status: "error",
-                    statusMessage: "Aplikasi tidak terhubung ke server.",
-                    result: null as T,
-                };
-            } else {
-                const { response }: any = resp as AxiosResponse & AxiosError;
-                if (response) {
-                    switch (response.status) {
-                        case 401:
-                            if (notification)
-                                RToast(
-                                    response.data?.statusMessage
-                                        ? response.data.statusMessage
-                                        : "Sesi anda telah berakhir: Silakan masuk lagi."
-                                );
-                            return {
-                                status: "error",
-                                statusMessage:
-                                    "Sesi anda telah berakhir: Silakan masuk lagi.",
-                                result: null as T,
-                            };
-                        case 403:
-                            if (notification)
-                                RToast(
-                                    "Anda tidak memiliki izin untuk mengakses sumber daya ini."
-                                );
-                            return {
-                                status: "error",
-                                statusMessage:
-                                    "Anda tidak memiliki izin untuk mengakses sumber daya ini.",
-                                result: null as T,
-                            };
-                        case 422:
-                            if (notification)
-                                RToast(response.data.statusMessage);
-                            return {
-                                status: "error",
-                                statusMessage: response.data.statusMessage,
-                                result: null as T,
-                            };
-                        case 500:
-                            if (notification)
-                                RToast("Server error, silahkan ulangi lagi.");
-                            return {
-                                status: "error",
-                                statusMessage:
-                                    "Server error, silahkan ulangi lagi.",
-                                result: null as T,
-                            };
-                        default:
-                            if (notification)
-                                RToast("Server error, silahkan ulangi lagi.");
-                            return {
-                                status: "error",
-                                statusMessage:
-                                    response.data.message ||
-                                    "Kesalahan tidak diketahui",
-                                result: null as T,
-                            };
-                    }
-                } else {
-                    if (notification)
-                        RToast(
-                            "Kesalahan Jaringan: Tidak ada respons dari server"
-                        );
-                    return {
-                        status: "error",
-                        statusMessage:
-                            "Kesalahan Jaringan: Tidak ada respon dari server",
-                        result: null as T,
-                    };
-                }
+            // HTTP 2xx but business-logic error from backend (e.g. validation message)
+            // Use 'warning' because this is user-correctable, not a system crash
+            if (statusMessage && notification) RToast(statusMessage, 'warning');
+            return { status: 'error', statusMessage, result };
+        }
+
+        // Error path — AxiosError (network error or HTTP 4xx/5xx)
+        const err = resp as AxiosError<ApiResponse<T>>;
+
+        if (err.code === 'ERR_NETWORK' || !err.response) {
+            const msg = 'Aplikasi tidak terhubung ke server.';
+            if (notification) RToast(msg, 'error');
+            return { status: 'error', statusMessage: msg };
+        }
+
+        const { status: httpStatus, data } = err.response;
+
+        switch (httpStatus) {
+            case 401: {
+                // Session expired — informational, not a crash
+                const msg = data?.statusMessage || 'Sesi anda telah berakhir: Silakan masuk lagi.';
+                if (notification) RToast(msg, 'warning');
+                return { status: 'error', statusMessage: msg };
+            }
+            case 403: {
+                // Forbidden — informational, user should know but it’s not a crash
+                const msg = data?.statusMessage || 'Anda tidak memiliki izin untuk mengakses sumber daya ini.';
+                if (notification) RToast(msg, 'warning');
+                return { status: 'error', statusMessage: msg };
+            }
+            case 422: {
+                // Validation error — user-correctable, use warning
+                const msg = data?.statusMessage || 'Validasi gagal.';
+                if (notification) RToast(msg, 'warning');
+                return { status: 'error', statusMessage: msg };
+            }
+            case 500: {
+                // Internal server error — system crash, use error (red)
+                const msg = data?.statusMessage || 'Server error, silahkan ulangi lagi.';
+                if (notification) RToast(msg, 'error');
+                return { status: 'error', statusMessage: msg };
+            }
+            default: {
+                // Unknown error — use error for anything unexpected
+                const msg =
+                    data?.statusMessage ||
+                    (err.response as { data: { message?: string } }).data?.message ||
+                    'Kesalahan tidak diketahui';
+                if (notification) RToast(msg, 'error');
+                return { status: 'error', statusMessage: msg };
             }
         }
     }

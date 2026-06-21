@@ -1,19 +1,79 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, StudentAddressType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, StudentAddressType } from '@/types';
+
 const api = new apiCore();
-async function get(params: Record<string, any> = {}, notification: boolean = false): Promise<StudentAddressType[]> {
-    const baseUrl = "/student/address";
-    const result = await api.get<StudentAddressType[]>(baseUrl, params, notification).then((value: ApiResponseInterface<StudentAddressType[]>) => value.result);
-    return result !== undefined ? result : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetAddressParams {
+    userId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}, notification: boolean = true) {
-    const result = await api.create<StudentAddressType>("/student/address", params, notification).then((resp) => resp.result);
-    return result !== undefined ? result : undefined;
+
+export interface StoreAddressParams {
+    province?: string;
+    city?: string;
+    district?: string;
+    village?: string;
+    street?: string;
+    rt?: string;
+    rw?: string;
+    postal?: string;
+    userId?: number;
+    createdBy?: number;
+    updatedBy?: number;
+    created_at?: string;
+    updated_at?: string;
 }
-async function update(params: Record<string, any> = {}, notification: boolean = true) {
-    return await api.update<StudentAddressType>(`/student/address/${params.id}`, params, notification).then((resp) => resp.result);
+
+export interface UpdateAddressParams extends Partial<StoreAddressParams> {
+    id?: number;
+    userId?: number;
+    createdBy?: number;
+    updatedBy?: number;
+    created_at?: string;
+    updated_at?: string;
 }
-async function destroy(id: number | undefined, notification: boolean = true) {
-    return await api.delete(`/student/address/${id}`, notification).then((resp) => resp);
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getAddress(
+    params: GetAddressParams = {}
+): Promise<StudentAddressType[]> {
+    const resp = await api.get<StudentAddressType[]>('/student/address', params);
+    return resp.result ?? [];
 }
-export { get, store, update, destroy };
+
+export async function storeAddress(
+    params: StoreAddressParams,
+    notification = true
+): Promise<StudentAddressType | undefined> {
+    const resp = await api.create<StudentAddressType>('/student/address', params as unknown as Record<string, unknown>, notification);
+    return resp.result;
+}
+
+export async function updateAddress(
+    params: UpdateAddressParams,
+    notification = true
+): Promise<ApiResponse<StudentAddressType>> {
+    return api.update<StudentAddressType>(`/student/address/${params.id}`, params as unknown as Record<string, unknown>, notification);
+}
+
+export async function deleteAddress(
+    id: number,
+    notification = true
+): Promise<ApiResponse<unknown>> {
+    return api.delete(`/student/address/${id}`, notification);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getAddress */ export const get = getAddress;
+/** @deprecated use storeAddress */ export const store = storeAddress;
+/** @deprecated use updateAddress */ export const update = updateAddress;
+/** @deprecated use deleteAddress */ export const destroy = deleteAddress;

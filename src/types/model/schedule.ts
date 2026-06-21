@@ -1,4 +1,4 @@
-import type { InstitutionType } from "./institution";
+import type { InstitutionType } from "@/features/institution/types";
 
 export interface ScheduleItem {
     id: number;

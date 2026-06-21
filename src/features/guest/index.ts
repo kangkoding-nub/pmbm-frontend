@@ -1,1 +1,1 @@
-export * from "./services/public";
+export * from "./services/public.services";

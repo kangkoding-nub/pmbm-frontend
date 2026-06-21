@@ -1,4 +1,11 @@
 export * from './services/receipt';
-export { cash, getActiveGateway, sendWhatsapp } from './services/payment';
-export { get as getGateway, update as updateGateway } from './services/gateway';
-export { dashboard as dashboardTransaction } from './services/transaction';
+export {
+    cashPayment as cash,
+    getActiveGateway,
+    sendPaymentWhatsapp as sendWhatsapp,
+} from './services/payment';
+export {
+    getGateways as getGateway,
+    updateGateway,
+} from './services/gateway';
+export { getTransactionDashboard as dashboardTransaction } from './services/transaction';

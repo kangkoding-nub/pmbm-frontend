@@ -1,5 +1,5 @@
 import { createContext, use } from "react";
-import type { YearType } from "@/types";
+import type { YearType } from "@/features/master/types";
 
 export const YearContext = createContext<YearType | undefined>(undefined);
 

@@ -1,51 +1,28 @@
 import React, { useEffect, useState } from "react";
 import Head from "@/components/layout/head";
 import Content from "@/components/layout/content";
+import moment from "moment";
 import { Col, Icon, PreviewCard, Row, Button } from "@/components";
 import { Badge, Card, Spinner, Table } from "reactstrap";
 import { useYearContext } from "@/hooks/useYearContext";
 import { useInstitutionContext } from "@/hooks/useInstitutionContext";
-import moment from "moment";
 import { Link } from "react-router-dom";
-import { apiCore } from "@/services/api";
 import { getGender } from "@/utils";
-
-const api = new apiCore();
-
-type GenderBreakdown = { all: number; male: number; female: number };
-
-type OperatorStats = {
-    institution: any;
-    stats: {
-        total: GenderBreakdown;
-        verified: GenderBreakdown;
-        unverified: GenderBreakdown;
-        boarding: GenderBreakdown;
-        nonBoarding: GenderBreakdown;
-        programs: Array<{
-            name: string;
-            alias: string;
-            total: GenderBreakdown;
-        }>;
-        out: GenderBreakdown;
-    };
-    recentStudents: any[];
-}
+import { getDashboardOperator } from "@/features/dashboard/services";
+import type { DashboardOperatorType } from "@/features/dashboard/types";
 
 const OperatorDashboard = () => {
     const year = useYearContext();
     const institution = useInstitutionContext();
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<OperatorStats | null>(null);
+    const [data, setData] = useState<DashboardOperatorType | null>(null);
 
     useEffect(() => {
         if (year?.id && institution?.id) {
-            api.get<OperatorStats>('/report/operator/stats', {
-                yearId: String(year.id),
-                institutionId: String(institution.id)
-            }, false)
-                .then((resp) => {
-                    setData(resp.result as OperatorStats);
+            setLoading(true);
+            getDashboardOperator({ yearId: year.id, institutionId: institution.id })
+                .then((result) => {
+                    setData(result ?? null);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -64,14 +41,14 @@ const OperatorDashboard = () => {
                                 <div className="d-flex align-items-center">
                                     <Icon name="monitor-fill" className="text-info fs-1 me-3" />
                                     <div>
-                                        <h4 className="title text-info mb-1">Pusat Kendali Operator</h4>
+                                        <h4 className="title text-info mb-1">Dashboard Operator</h4>
                                         <p className="text-soft">Madrasah: <strong>{institution?.name}</strong> | TA: <strong>{year?.name}</strong></p>
                                     </div>
                                 </div>
                                 <div className="d-none d-md-block">
                                     <Link to="/data-pendaftar">
                                         <Button color="info" className="btn-dim">
-                                            <Icon name="users-fill" /> <span>Lihat Semua Pendaftar</span>
+                                            <Icon name="users-fill" /> <span>Semua Pendaftar</span>
                                         </Button>
                                     </Link>
                                 </div>
@@ -86,7 +63,7 @@ const OperatorDashboard = () => {
                     ) : (
                         data && (
                             <>
-                                <Col md={2}>
+                                <Col md={2} lg={4} xl={4}>
                                     <Card className="card-bordered border-primary shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -97,14 +74,17 @@ const OperatorDashboard = () => {
                                                     <Icon name="users-fill" className="text-primary fs-3" />
                                                 </div>
                                             </div>
-                                            <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-primary fs-2">{data.stats.total.all}</div>
-                                                <div className="info text-soft small">Siswa Mendaftar</div>
-                                            </div>
+                                             <div className="data-group align-center flex-wrap g-3 justify-between">
+                                                 <div className="amount text-primary fs-2">{data.stats.total.all} Siswa</div>
+                                                 <div className="small text-soft">
+                                                    <Badge color="light" className="me-2">L:  {data.stats.total.male}</Badge>
+                                                    <Badge color="light">P: {data.stats.total.female}</Badge>
+                                                </div>
+                                             </div>
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={2}>
+                                <Col md={2} lg={4} xl={4}>
                                     <Card className="card-bordered border-info shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -115,14 +95,17 @@ const OperatorDashboard = () => {
                                                     <Icon name="home-fill" className="text-info fs-3" />
                                                 </div>
                                             </div>
-                                            <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-info fs-2">{data.stats.boarding.all}</div>
-                                                <div className="danger text-soft small">Tinggal di Asrama</div>
+                                            <div className="data-group align-center flex-wrap g-3 justify-between">
+                                                <div className="amount text-info fs-2">{data.stats.boarding.all} Siswa</div>
+                                                <div className="small text-soft">
+                                                    <Badge color="light" className="me-2">L:  {data.stats.boarding.male}</Badge>
+                                                    <Badge color="light">P: {data.stats.boarding.female}</Badge>
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={2}>
+                                <Col md={2} lg={4} xl={4}>
                                     <Card className="card-bordered border-info shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -133,14 +116,17 @@ const OperatorDashboard = () => {
                                                     <Icon name="user-fill" className="text-info fs-3" />
                                                 </div>
                                             </div>
-                                            <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-info fs-2">{data.stats.nonBoarding.all}</div>
-                                                <div className="danger text-soft small">Pulang Pergi</div>
+                                            <div className="data-group align-center flex-wrap g-3 justify-between">
+                                                <div className="amount text-info fs-2">{data.stats.nonBoarding.all} Siswa</div>
+                                                <div className="small text-soft">
+                                                    <Badge color="light" className="me-2">L:  {data.stats.nonBoarding.male}</Badge>
+                                                    <Badge color="light">P: {data.stats.nonBoarding.female}</Badge>
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={2}>
+                                <Col md={2} lg={4} xl={4}>
                                     <Card className="card-bordered border-success shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -151,14 +137,17 @@ const OperatorDashboard = () => {
                                                     <Icon name="check-circle-fill" className="text-success fs-3" />
                                                 </div>
                                             </div>
-                                            <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-success fs-2">{data.stats.verified.all}</div>
-                                                <div className="info text-soft small">Dokumen Lengkap</div>
+                                            <div className="data-group align-center flex-wrap g-3 justify-between">
+                                                <div className="amount text-success fs-2">{data.stats.verified.all} Siswa</div>
+                                                <div className="small text-soft">
+                                                    <Badge color="light" className="me-2">L:  {data.stats.verified.male}</Badge>
+                                                    <Badge color="light">P: {data.stats.verified.female}</Badge>
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={2}>
+                                <Col md={2} lg={4} xl={4}>
                                     <Card className="card-bordered border-warning shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -170,13 +159,17 @@ const OperatorDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-warning fs-2">{data.stats.unverified.all}</div>
+                                                <div className="amount text-warning fs-2">{data.stats.unverified.all}</div>
                                                 <div className="info text-soft small">Perlu Reviu</div>
+                                            </div>
+                                            <div className="mt-1 small text-soft">
+                                                <span className="text-blue me-2">L {data.stats.unverified.male}</span>
+                                                <span className="text-pink">P {data.stats.unverified.female}</span>
                                             </div>
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={2}>
+                                <Col md={2} lg={4}>
                                     <Card className="card-bordered border-danger shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -188,8 +181,12 @@ const OperatorDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="data-group align-end flex-wrap g-3 justify-between">
-                                             <div className="amount text-danger fs-2">{data.stats.out.all}</div>
+                                                <div className="amount text-danger fs-2">{data.stats.out.all}</div>
                                                 <div className="info text-soft small">Mengundurkan Diri</div>
+                                            </div>
+                                            <div className="mt-1 small text-soft">
+                                                <span className="text-blue me-2">L {data.stats.out.male}</span>
+                                                <span className="text-pink">P {data.stats.out.female}</span>
                                             </div>
                                         </div>
                                     </Card>
@@ -209,8 +206,12 @@ const OperatorDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                 <div className="amount text-gray fs-2">{prog.total.all}</div>
+                                                    <div className="amount text-gray fs-2">{prog.total.all}</div>
                                                     <div className="info text-soft small">Siswa Pilihan</div>
+                                                </div>
+                                                <div className="mt-1 small text-soft">
+                                                    <span className="text-blue me-2">L {prog.total.male}</span>
+                                                    <span className="text-pink">P {prog.total.female}</span>
                                                 </div>
                                             </div>
                                         </Card>

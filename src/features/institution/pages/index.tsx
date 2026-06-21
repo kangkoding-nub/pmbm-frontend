@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react"
 import Head from "@/components/layout/head"
 import Content from "@/components/layout/content"
 import { useForm } from "react-hook-form"
-import type { InstitutionFormType, InstitutionType } from "@/types"
+import type { InstitutionType } from "@/features/institution/types"
+import type { InstitutionFormType } from "@/features/institution/types"
 import {
     Block,
     BlockHead,
@@ -16,7 +17,7 @@ import {
 import { Card } from "reactstrap"
 import { useAuthContext } from "@/hooks/useAuthContext"
 import InstitutionForm from "@/features/institution/components/form"
-import { show as showInstitution, update as updateInstitution } from "@/features/institution/services/institution"
+import { showInstitution, updateInstitution } from "@/features/institution/services"
 const Institution = () => {
     const { user } = useAuthContext()
     const [loading, setLoading] = useState(false)
@@ -36,7 +37,7 @@ const Institution = () => {
             email: value.email,
             website: value.website,
             head: value.head,
-            image: value.file[0],
+            image: value.image?.[0],
         }
         setLoading(true)
         await updateInstitution(formData).finally(() => setLoading(false));
@@ -45,7 +46,7 @@ const Institution = () => {
         const fetchInstitution = async () => {
             setLoading(true)
             try {
-                const resp = await showInstitution({ id: user?.institutionId })
+                const resp = await showInstitution(user?.institutionId as number)
                 setInstitution(resp)
                 setValue("id", resp ? resp.id : 0)
                 setValue("name", resp ? resp.name : "")

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getApplicantReport } from "@/features/report/services/report.ts";
 import { getGender } from "@/utils";
-import { show as showInstitution } from "@/features/institution/services/institution.ts";
+import { show as showInstitution } from "@/features/institution/services/institution.services";
 import PrintLayout from "@/features/report/components/PrintLayout.tsx";
 
 type ApplicantType = {
@@ -36,7 +36,7 @@ const ApplicantsReportPrint = () => {
             setLoading(true);
             try {
                 if (institutionId && institutionId !== "0") {
-                    const institution = await showInstitution({ id: institutionId })
+                    const institution = await showInstitution(Number(institutionId))
                     if (institution) setInstitutionName(institution.surname)
                 }
 

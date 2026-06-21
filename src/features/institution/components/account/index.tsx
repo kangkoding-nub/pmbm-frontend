@@ -3,8 +3,8 @@ import {Button, Icon, ReactDataTable, RSelect} from "@/components";
 import type {ColumnType, InstitutionAccountType, OptionsType} from "@/types";
 import {Modal, ModalBody, ModalHeader, Spinner} from "reactstrap";
 import {
-    get as getAccount,
-    store as storeAccount,
+    getAccounts,
+    storeAccount,
 } from "@/features/institution/services/account";
 import {Controller, useForm} from "react-hook-form";
 
@@ -62,7 +62,7 @@ const AccountComponent = ({institutionId, modal, setModal}: AccountComponentProp
         }).finally(() => setLoading(false));
     }
     useEffect(() => {
-        getAccount<InstitutionAccountType>({ list: 'table', institutionId: institutionId }).then((resp) => {
+        getAccounts({ list: 'table', institutionId: institutionId }).then((resp) => {
             if (resp) setAccounts(resp)
         }).finally(() => setLoadData(false))
     }, [institutionId, loadData]);

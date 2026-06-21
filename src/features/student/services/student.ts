@@ -1,72 +1,83 @@
-import { apiCore } from "@/services/api";
+import { apiCore } from '@/services/api';
 import type {
-    ApiResponseInterface,
-    StudentBoardingType,
     StudentDashboardType,
     StudentInvoiceType,
-} from "@/types";
+    StudentBoardingType,
+} from '@/types';
+import type { ApiResponse } from '@/types';
 
 const api = new apiCore();
 
-async function studentDashboard(
-    params: Record<string, any> = {},
-    notification: boolean = false
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetStudentDashboardParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
+}
+
+export interface GetStudentInvoiceParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
+}
+
+export interface GetStudentBoardingParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
+}
+
+export interface GetStudentTreasurerParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
+}
+
+export interface UpdateStudentProgramParams {
+    programId?: number;
+    boardingId?: number;
+    [key: string]: string | number | boolean | null | undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function studentDashboard(
+    params: GetStudentDashboardParams = {}
 ): Promise<StudentDashboardType | undefined> {
-    const baseUrl = "/student/dashboard";
-    const result = await api
-        .get<StudentDashboardType>(baseUrl, params, notification)
-        .then((value: ApiResponseInterface<StudentDashboardType>) => value.result);
-    return result !== undefined ? result : undefined;
+    const resp = await api.get<StudentDashboardType>('/student/dashboard', params);
+    return resp.result;
 }
 
-async function studentTreasurer<T>(
-    params: Record<string, any> = {},
-    notification: boolean = false
-): Promise<T[] | []> {
-    const baseUrl = "/student/treasurer";
-    const result = await api
-        .get<T[]>(baseUrl, params, notification)
-        .then((value: ApiResponseInterface<T[]>) => value.result);
-    return result !== undefined ? result : [];
+export async function studentTreasurer<T>(
+    params: GetStudentTreasurerParams = {}
+): Promise<T[]> {
+    const resp = await api.get<T[]>('/student/treasurer', params);
+    return resp.result ?? [];
 }
 
-async function studentInvoice(
-    params: Record<string, any> = {},
-    notification: boolean = false
-): Promise<StudentInvoiceType[] | []> {
-    const baseUrl = "/student/invoice";
-    const result = await api
-        .get<StudentInvoiceType[]>(baseUrl, params, notification)
-        .then((value: ApiResponseInterface<StudentInvoiceType[]>) => value.result);
-    return result !== undefined ? result : [];
+export async function studentInvoice(
+    params: GetStudentInvoiceParams = {}
+): Promise<StudentInvoiceType[]> {
+    const resp = await api.get<StudentInvoiceType[]>('/student/invoice', params);
+    return resp.result ?? [];
 }
 
-async function studentBoarding(
-    params: Record<string, any> = {},
-    notification: boolean = false
-): Promise<StudentBoardingType[] | []> {
-    const baseUrl = "/student/boarding";
-    const result = await api
-        .get<StudentBoardingType[]>(baseUrl, params, notification)
-        .then(
-            (value: ApiResponseInterface<StudentBoardingType[]>) => value.result
-        );
-    return result !== undefined ? result : [];
+export async function studentBoarding(
+    params: GetStudentBoardingParams = {}
+): Promise<StudentBoardingType[]> {
+    const resp = await api.get<StudentBoardingType[]>('/student/boarding', params);
+    return resp.result ?? [];
 }
 
-async function updateStudentProgram(
+export async function updateStudentProgram(
     id: number,
-    params: Record<string, any> = {},
-    notification: boolean = true
-) {
-    const baseUrl = `/student/program/${id}`;
-    return await api.update(baseUrl, params, notification).then((resp) => resp);
+    params: UpdateStudentProgramParams,
+    notification = true
+): Promise<ApiResponse<unknown>> {
+    return api.update(`/student/program/${id}`, params as unknown as Record<string, unknown>, notification);
 }
-
-export {
-    studentDashboard,
-    studentInvoice,
-    studentTreasurer,
-    studentBoarding,
-    updateStudentProgram,
-};

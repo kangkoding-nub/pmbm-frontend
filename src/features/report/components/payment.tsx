@@ -21,7 +21,7 @@ import moment from "moment";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { id } from "date-fns/locale/id";
 import { useAuthContext } from "@/hooks/useAuthContext.ts";
-import { get as getInstitution } from "@/features/institution/services/institution.ts";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 
 registerLocale('id', id);
 

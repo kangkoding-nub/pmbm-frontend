@@ -12,7 +12,7 @@ import {
     Row
 } from "@/components";
 import { useAuthContext } from "@/hooks/useAuthContext";
-import { show as showInstitution } from "@/features/institution/services/institution";
+import { show as showInstitution } from "@/features/institution/services/institution.services";
 import { get as getPersonal } from "@/features/student/services/personal";
 import { get as getParent } from "@/features/student/services/parent";
 import { get as getAddress } from "@/features/student/services/address";
@@ -98,7 +98,7 @@ const Print = () => {
     };
 
     useEffect(() => {
-        user?.institutionId && showInstitution({ id: user.institutionId }).then((resp) => setInstitution(resp));
+        user?.institutionId && showInstitution(user.institutionId).then((resp) => setInstitution(resp));
         const getData = async () => {
             const personal = await getPersonal<StudentPersonalType>({ userId: user?.id }).then((resp) => {
                 if (resp.length > 0) return resp[0];
@@ -109,7 +109,7 @@ const Print = () => {
             const address = await getAddress({ userId: user?.id }).then((resp) => {
                 if (resp.length > 0) return resp[0];
             });
-            const program = await getProgram({ userId: user?.id, with: ['program', 'boarding', 'room'] }).then((resp) => {
+            const program = await getProgram({ userId: user?.id, with: 'program,boarding,room' }).then((resp) => {
                 if (resp.length > 0) return resp[0];
             })
             const origin = await getOrigin({ userId: user?.id }).then((resp) => {

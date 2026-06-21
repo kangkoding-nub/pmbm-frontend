@@ -14,7 +14,7 @@ const Detail = () => {
     const [invoice, setInvoice] = useState<InvoicePrintType>()
 
     useEffect(() => {
-        showInvoice<InvoicePrintType>({ id: id, type: 'detail' }).then((resp) => setInvoice(resp))
+        showInvoice({ id: id, type: 'detail' }).then((resp) => setInvoice(resp as unknown as InvoicePrintType))
     }, [id])
 
     return (

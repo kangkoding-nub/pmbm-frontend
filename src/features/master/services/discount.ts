@@ -1,11 +1,53 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, DiscountType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, DiscountType } from '@/types';
+
 const api = new apiCore();
-async function get<T>(params: Record<string, any> = {}, notification = false): Promise<T[]> {
-  const r = await api.get<T[]>("/master/discount", params, notification).then((v: ApiResponseInterface<T[]>) => v.result);
-  return r !== undefined ? r : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetDiscountsParams {
+    yearId?: number;
+    institutionId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}) { return await api.create<DiscountType>("/master/discount", params, true).then((r) => r); }
-async function update(params: Record<string, any> = {}) { return await api.update<DiscountType>(`/master/discount/${params.id}`, params, true).then((r) => r); }
-async function destroy(id: number | undefined) { return await api.delete(`/master/discount/${id}`, true).then((r) => r); }
-export { get, store, update, destroy };
+
+export interface StoreDiscountParams {
+    yearId: number;
+    institutionId: number;
+    name: string;
+    amount: number;
+    type: number;
+}
+
+export interface UpdateDiscountParams extends Partial<StoreDiscountParams> {
+    id: number;
+}
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getDiscounts(
+    params: GetDiscountsParams = {}
+): Promise<DiscountType[]> {
+    const resp = await api.get<DiscountType[]>('/master/discount', params);
+    return resp.result ?? [];
+}
+
+export async function storeDiscount(
+    params: StoreDiscountParams
+): Promise<ApiResponse<DiscountType>> {
+    return api.create<DiscountType>('/master/discount', params as unknown as Record<string, unknown>, true);
+}
+
+export async function updateDiscount(
+    params: UpdateDiscountParams
+): Promise<ApiResponse<DiscountType>> {
+    return api.update<DiscountType>(`/master/discount/${params.id}`, params as unknown as Record<string, unknown>, true);
+}
+
+export async function deleteDiscount(id: number): Promise<ApiResponse<unknown>> {
+    return api.delete(`/master/discount/${id}`, true);
+}

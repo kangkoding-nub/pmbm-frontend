@@ -39,7 +39,7 @@ import { get as getProgram } from "@/features/student/services/program";
 import { get as getOrigin } from "@/features/student/services/origin";
 import { get as getFile } from "@/features/student/services/file";
 import { get as getVerification } from "@/features/student/services/verification";
-import { get as getPrograms } from "@/features/institution/services/program";
+import { get as getPrograms } from "@/features/institution/services/program.service";
 import { get as getBoarding } from "@/features/master/services/boarding";
 import { useReactToPrint } from "react-to-print";
 import { getGender } from "@/utils";
@@ -153,7 +153,7 @@ const StudentOperator = () => {
             const address = await getAddress({ userId: userId }).then((resp) => {
                 if (resp.length > 0) return resp[0];
             });
-            const program = await getProgram({ userId: userId, with: ['program', 'boarding', 'room'] }).then((resp) => {
+            const program = await getProgram({ userId: userId, with: 'program,boarding,room' }).then((resp) => {
                 if (resp.length > 0) return resp[0];
             })
             const origin = await getOrigin({ userId: userId }).then((resp) => {

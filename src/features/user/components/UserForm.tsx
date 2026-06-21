@@ -4,7 +4,7 @@ import { Icon, Row, RSelect } from "@/components";
 import { ROLE_OPTIONS } from "@/constants";
 import type { OptionsType, UserType } from "@/types";
 import { useAuthContext } from "@/hooks/useAuthContext";
-import { get as getInstitution } from "@/features/institution/services/institution";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 
 interface UserFormProps {
     methods: UseFormReturn<UserType>

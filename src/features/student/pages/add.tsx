@@ -49,14 +49,14 @@ const StudentAdd = () => {
             const fetchData = async () => {
                 try {
                     const user = await showUser(Number(id));
-                    const personal = await getPersonal({ userId: id }).then((resp) => resp[0]);
-                    const parent = await getParent({ userId: id }).then((resp) => resp[0]);
-                    const address = await getAddress({ userId: id }).then((resp) => resp[0]);
-                    const program = await getProgram({ userId: id }).then((resp) => resp[0]);
-                    const origin = await getOrigin({ userId: id }).then((resp) => resp[0]);
-                    const file = await getFile({ userId: id }).then((resp) => resp[0]); // This might need adjustment as file form expects specific format
-                    const verification = await getVerification({ userId: id }).then((resp) => resp[0]);
-                    const achievements = await getAchievement({ userId: id });
+                    const personal = await getPersonal({ userId: Number(id) }).then((resp) => resp[0]);
+                    const parent = await getParent({ userId: Number(id) }).then((resp) => resp[0]);
+                    const address = await getAddress({ userId: Number(id) }).then((resp) => resp[0]);
+                    const program = await getProgram({ userId: Number(id) }).then((resp) => resp[0]);
+                    const origin = await getOrigin({ userId: Number(id) }).then((resp) => resp[0]);
+                    const file = await getFile({ userId: Number(id) }).then((resp) => resp[0]);
+                    const verification = await getVerification({ userId: Number(id) }).then((resp) => resp[0]);
+                    const achievements = await getAchievement({ userId: Number(id) });
 
                     setFormData({
                         user,

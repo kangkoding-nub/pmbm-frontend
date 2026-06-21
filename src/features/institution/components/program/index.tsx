@@ -7,15 +7,15 @@ import React, { useEffect, useState } from "react";
 import type { ColumnType, InstitutionProgramFormType, InstitutionProgramType, OptionsType } from "@/types";
 import { Badge, ButtonGroup, Modal, ModalBody, ModalHeader, Spinner } from "reactstrap";
 import {
-    get as getProgram,
-    destroy as destroyProgram,
-    store as storeProgram,
-    update as updateProgram
-} from "@/features/institution/services/program";
+    getPrograms,
+    deleteProgram,
+    storeProgram,
+    updateProgram
+} from "@/features/institution/services/program.service";
 import { useYearContext } from "@/hooks/useYearContext";
 import { getRandomColor } from "@/utils";
 import { Controller, useForm } from "react-hook-form";
-import { get as getBoarding } from "@/features/master/services/boarding";
+import { getBoardings } from "@/features/master/services/boarding";
 
 interface ProgramComponentProps {
     institutionId?: number;
@@ -82,7 +82,7 @@ const ProgramComponent = ({ institutionId, modal, setModal }: ProgramComponentPr
                     </Button>
                     <Button outline color="danger" onClick={async () => {
                         setLoading(row?.id);
-                        await destroyProgram(row?.id)
+                        await deleteProgram(row.id as number)
                             .then(() => setLoadData(true))
                             .finally(() => setLoading(false));
                     }}>
@@ -133,13 +133,13 @@ const ProgramComponent = ({ institutionId, modal, setModal }: ProgramComponentPr
     }
 
     useEffect(() => {
-        getBoarding<OptionsType>({ type: 'select' }).then((resp) => {
-            if (resp) setBoardingOptions(resp)
+        getBoardings({ type: 'select' }).then((resp) => {
+            if (resp) setBoardingOptions(resp as unknown as OptionsType[])
         })
     }, []);
 
     useEffect(() => {
-        getProgram<InstitutionProgramType>({ list: 'table', yearId: year?.id, institutionId: institutionId }).then((resp) => {
+        getPrograms({ list: 'table', yearId: year?.id, institutionId: institutionId }).then((resp) => {
             if (resp) setPrograms(resp)
         }).finally(() => setLoadData(false))
     }, [institutionId, year, loadData]);

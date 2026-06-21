@@ -1,18 +1,72 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, StudentAchievementType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, StudentAchievementType } from '@/types';
+
 const api = new apiCore();
-async function get(params: Record<string, any> = {}, notification: boolean = false): Promise<StudentAchievementType[]> {
-    const result = await api.get<StudentAchievementType[]>("/student/achievement", params, notification).then((v: ApiResponseInterface<StudentAchievementType[]>) => v.result);
-    return result !== undefined ? result : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetAchievementParams {
+    userId?: number;
+    yearId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}, notification: boolean = true) {
-    const result = await api.createWithFile<StudentAchievementType>("/student/achievement", params, notification).then((r) => r.result);
-    return result !== undefined ? result : undefined;
+
+export interface StoreAchievementParams {
+    id?: number;
+    userId?: number;
+    yearId?: number;
+    level?: number;
+    champ?: number;
+    type?: number;
+    name?: string;
+    file?: File | string;
+    image?: File | string;
+    createdBy?: number;
+    updatedBy?: number;
+    created_at?: string;
+    updated_at?: string;
 }
-async function update(params: Record<string, any> = {}, notification: boolean = true) {
-    return await api.updateWithFile<StudentAchievementType>(`/student/achievement/${params.id}`, params, notification).then((r) => r.result);
+
+export interface UpdateAchievementParams extends Partial<StoreAchievementParams> {
+    id?: number;
 }
-async function destroy(id: number | undefined) {
-    return await api.delete(`/student/achievement/${id}`, true).then((r) => r);
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getAchievements(
+    params: GetAchievementParams = {}
+): Promise<StudentAchievementType[]> {
+    const resp = await api.get<StudentAchievementType[]>('/student/achievement', params);
+    return resp.result ?? [];
 }
-export { get, store, update, destroy };
+
+export async function storeAchievement(
+    params: StoreAchievementParams,
+    notification = true
+): Promise<StudentAchievementType | undefined> {
+    const resp = await api.createWithFile<StudentAchievementType>('/student/achievement', params as unknown as Record<string, unknown>, notification);
+    return resp.result;
+}
+
+export async function updateAchievement(
+    params: UpdateAchievementParams,
+    notification = true
+): Promise<ApiResponse<StudentAchievementType>> {
+    return api.updateWithFile<StudentAchievementType>(`/student/achievement/${params.id}`, params as unknown as Record<string, unknown>, notification);
+}
+
+export async function deleteAchievement(id: number | undefined): Promise<ApiResponse<unknown>> {
+    return api.delete(`/student/achievement/${id}`, true);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getAchievements */ export const get = getAchievements;
+/** @deprecated use storeAchievement */ export const store = storeAchievement;
+/** @deprecated use updateAchievement */ export const update = updateAchievement;
+/** @deprecated use deleteAchievement */ export const destroy = deleteAchievement;

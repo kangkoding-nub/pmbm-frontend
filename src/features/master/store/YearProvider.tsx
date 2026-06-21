@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
-import type { YearType } from "@/types";
-import { year as getYear } from "@/features/guest/services/public";
+import type { YearType } from "@/features/master/types";
+import { year as getYear } from "@/features/guest/services/public.services";
 import { YearContext } from "@/hooks/useYearContext";
 import { Loading } from "@/components";
 

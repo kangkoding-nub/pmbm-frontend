@@ -1,9 +1,24 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface } from "@/types";
+import { apiCore } from '@/services/api';
+import type { PaginatedLogs, GetSystemLogsParams, SystemLogItem } from '@/features/dashboard/types';
+
 const api = new apiCore();
-export interface SystemLogItem { id: number; userId: number | null; level: string; message: string; context: any; ip_address: string | null; user_agent: string | null; created_at: string; updated_at: string; user?: { id: number; name: string; }; }
-export interface PaginatedLogs { data: SystemLogItem[]; total: number; last_page: number; current_page: number; }
-async function getLogs(params: Record<string, any> = {}): Promise<PaginatedLogs | null> { const r = await api.get<PaginatedLogs>("/system/logs", params, false).then((v: ApiResponseInterface<PaginatedLogs>) => v.result); return r ?? null; }
-async function deleteLog(id: number | string): Promise<boolean> { return await api.delete(`/system/logs/${id}`, true).then((r: ApiResponseInterface<any>) => r.status === "success"); }
-async function clearLogs(): Promise<boolean> { return await api.delete("/system/logs/clear", true).then((r: ApiResponseInterface<any>) => r.status === "success"); }
-export { getLogs, deleteLog, clearLogs };
+
+export async function getLogs(
+    params: GetSystemLogsParams = {}
+): Promise<PaginatedLogs | undefined> {
+    const resp = await api.get<PaginatedLogs>('/system/logs', params);
+    return resp.status === 'success' ? resp.result : undefined;
+}
+
+export async function deleteLog(id: number | string): Promise<boolean> {
+    const resp = await api.delete(`/system/logs/${id}`, true);
+    return resp.status === 'success';
+}
+
+export async function clearLogs(): Promise<boolean> {
+    const resp = await api.delete('/system/logs/clear', true);
+    return resp.status === 'success';
+}
+
+// Re-export types so consumers can import them from this service file
+export type { PaginatedLogs, SystemLogItem };

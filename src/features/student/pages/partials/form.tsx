@@ -308,7 +308,7 @@ export const AchievementForm = ({ setActiveIconTab, setFormData, formData }: Stu
         console.log(formData)
     }
     const onDelete = (id?: number) => {
-        destroyAchievement(id)
+        if (id !== undefined) destroyAchievement(id)
         const achievementsFilter = achievements.filter((item) => item.id !== id)
         setAchievements(achievementsFilter)
     }
@@ -799,39 +799,39 @@ const VerificationForm = ({ formData }: StudentFormProps) => {
                                             if (verificationResp !== undefined) {
                                                 RToast('Data Pendaftar berhasil ditambahkan', 'success')
                                             } else {
-                                                await destroyFile(fileResp.id, false)
-                                                await destroyOrigin(originResp.id, false)
-                                                await destroyProgram(programResp.id, false)
-                                                await destroyAddress(addressResp.id, false)
-                                                await destroyParent(parentResp.id, false)
-                                                await destroyPersonal(personalResp.id, false)
-                                                await destroyUser(userResp.id, false)
+                                                if (fileResp?.id) await destroyFile(fileResp.id, false)
+                                                if (originResp?.id) await destroyOrigin(originResp.id, false)
+                                                if (programResp?.id) await destroyProgram(programResp.id, false)
+                                                if (addressResp?.id) await destroyAddress(addressResp.id, false)
+                                                if (parentResp?.id) await destroyParent(parentResp.id, false)
+                                                if (personalResp?.id) await destroyPersonal(personalResp.id, false)
+                                                if (userResp?.id) await destroyUser(userResp.id, false)
                                             }
                                         }
                                     } else {
-                                        await destroyProgram(programResp.id, false)
-                                        await destroyAddress(addressResp.id, false)
-                                        await destroyParent(parentResp.id, false)
-                                        await destroyPersonal(personalResp.id, false)
-                                        await destroyUser(userResp.id, false)
+                                        if (programResp?.id) await destroyProgram(programResp.id, false)
+                                        if (addressResp?.id) await destroyAddress(addressResp.id, false)
+                                        if (parentResp?.id) await destroyParent(parentResp.id, false)
+                                        if (personalResp?.id) await destroyPersonal(personalResp.id, false)
+                                        if (userResp?.id) await destroyUser(userResp.id, false)
                                     }
                                 } else {
-                                    await destroyAddress(addressResp.id, false)
-                                    await destroyParent(parentResp.id, false)
-                                    await destroyPersonal(personalResp.id, false)
-                                    await destroyUser(userResp.id, false)
+                                    if (addressResp?.id) await destroyAddress(addressResp.id, false)
+                                    if (parentResp?.id) await destroyParent(parentResp.id, false)
+                                    if (personalResp?.id) await destroyPersonal(personalResp.id, false)
+                                    if (userResp?.id) await destroyUser(userResp.id, false)
                                 }
                             } else {
-                                await destroyParent(parentResp.id, false)
-                                await destroyPersonal(personalResp.id, false)
-                                await destroyUser(userResp.id, false)
+                                if (parentResp?.id) await destroyParent(parentResp.id, false)
+                                if (personalResp?.id) await destroyPersonal(personalResp.id, false)
+                                if (userResp?.id) await destroyUser(userResp.id, false)
                             }
                         } else {
-                            await destroyPersonal(personalResp.id, false)
-                            await destroyUser(userResp.id, false)
+                            if (personalResp?.id) await destroyPersonal(personalResp.id, false)
+                            if (userResp?.id) await destroyUser(userResp.id, false)
                         }
                     } else {
-                        await destroyParent(userResp.id, false)
+                        if (userResp?.id) await destroyParent(userResp.id, false)
                     }
                 }
             }

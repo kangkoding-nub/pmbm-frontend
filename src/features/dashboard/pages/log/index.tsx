@@ -13,7 +13,7 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import { getLogs, deleteLog, clearLogs, type PaginatedLogs, type SystemLogItem } from "@/features/dashboard/services/systemLog";
+import { getLogs, deleteLog, clearLogs, type SystemLogItem } from "@/features/dashboard/services/systemLog";
 import type { ColumnType } from "@/types";
 
 const SystemLog = () => {
@@ -37,7 +37,7 @@ const SystemLog = () => {
         const fetchData = async () => {
             setIsFetching(true);
             await getLogs({ page: currentPage, limit: perPage })
-                .then((resp: PaginatedLogs | null) => {
+                .then((resp) => {
                     if (resp) {
                         setLogs(resp.data);
                         setTotalRows(resp.total);
@@ -62,14 +62,14 @@ const SystemLog = () => {
             return prev;
         });
         setIsFetching(true);
-        getLogs({ page: currentPage, limit: perPage })
-            .then((resp: PaginatedLogs | null) => {
-                if (resp) {
-                    setLogs(resp.data);
-                    setTotalRows(resp.total);
-                }
-            })
-            .finally(() => setIsFetching(false));
+                        getLogs({ page: currentPage, limit: perPage })
+                            .then((result) => {
+                                if (result) {
+                                    setLogs(result.data);
+                                    setTotalRows(result.total);
+                                }
+                            })
+                            .finally(() => setIsFetching(false));
     };
 
     const handleDelete = async (id: number) => {
@@ -85,7 +85,7 @@ const SystemLog = () => {
                     if (targetPage === currentPage) {
                         setIsFetching(true);
                         getLogs({ page: currentPage, limit: perPage })
-                            .then((resp: PaginatedLogs | null) => {
+                            .then((resp) => {
                                 if (resp) {
                                     setLogs(resp.data);
                                     setTotalRows(resp.total);

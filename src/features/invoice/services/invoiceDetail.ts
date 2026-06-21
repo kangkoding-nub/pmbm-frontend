@@ -1,20 +1,71 @@
-import { apiCore } from "@/services/api";
-import type { ApiResponseInterface, InvoiceDetailType } from "@/types";
+import { apiCore } from '@/services/api';
+import type { ApiResponse, InvoiceDetailType } from '@/types';
+
 const api = new apiCore();
-async function get<T>(params: Record<string, any> = {}, notification: boolean = false): Promise<T[]> {
-    const result = await api.get<T[]>('/invoice/detail', params, notification).then((v: ApiResponseInterface<T[]>) => v.result);
-    return result !== undefined ? result : [];
+
+// ---------------------------------------------------------------------------
+// Param types
+// ---------------------------------------------------------------------------
+
+export interface GetInvoiceDetailsParams {
+    invoiceId?: number;
+    [key: string]: string | number | boolean | null | undefined;
 }
-async function store(params: Record<string, any> = {}, notification: boolean = false): Promise<ApiResponseInterface<InvoiceDetailType> | void> {
-    return await api.create<InvoiceDetailType>('/invoice/detail', params, notification).then((r) => r);
+
+export interface StoreInvoiceDetailParams {
+    id?: number;
+    invoiceId?: number;
+    productId?: number;
+    name: string;
+    price?: number;
+    discount?: number;
+    amount?: number;
 }
-async function show(params: Record<string, any> = {}) {
-    return await api.get<InvoiceDetailType>(`/invoice/detail/${params.id}`, params, true).then((r) => r.result);
+
+export interface UpdateInvoiceDetailParams extends Partial<StoreInvoiceDetailParams> {
+    id?: number;
 }
-async function update(params: Record<string, any> = {}, notification: boolean = true) {
-    return await api.update<InvoiceDetailType>(`/invoice/detail/${params.id}`, params, notification).then((r) => r);
+
+// ---------------------------------------------------------------------------
+// Service functions
+// ---------------------------------------------------------------------------
+
+export async function getInvoiceDetails(
+    params: GetInvoiceDetailsParams = {}
+): Promise<InvoiceDetailType[]> {
+    const resp = await api.get<InvoiceDetailType[]>('/invoice/detail', params);
+    return resp.result ?? [];
 }
-async function destroy(id: number | undefined) {
-    return await api.delete(`/invoice/detail/${id}`, true).then((r) => r);
+
+export async function showInvoiceDetail(
+    id: number
+): Promise<InvoiceDetailType | undefined> {
+    const resp = await api.get<InvoiceDetailType>(`/invoice/detail/${id}`, {});
+    return resp.result;
 }
-export { get, store, show, update, destroy };
+
+export async function storeInvoiceDetail(
+    params: StoreInvoiceDetailParams,
+    notification = false
+): Promise<ApiResponse<InvoiceDetailType>> {
+    return api.create<InvoiceDetailType>('/invoice/detail', params as unknown as Record<string, unknown>, notification);
+}
+
+export async function updateInvoiceDetail(
+    params: UpdateInvoiceDetailParams,
+    notification = true
+): Promise<ApiResponse<InvoiceDetailType>> {
+    return api.update<InvoiceDetailType>(`/invoice/detail/${params.id}`, params as unknown as Record<string, unknown>, notification);
+}
+
+export async function deleteInvoiceDetail(id: number): Promise<ApiResponse<unknown>> {
+    return api.delete(`/invoice/detail/${id}`, true);
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat aliases
+// ---------------------------------------------------------------------------
+/** @deprecated use getInvoiceDetails */ export function get<T = InvoiceDetailType>(params: GetInvoiceDetailsParams = {}): Promise<T[]> { return getInvoiceDetails(params) as unknown as Promise<T[]>; }
+/** @deprecated use storeInvoiceDetail */ export const store = storeInvoiceDetail;
+/** @deprecated use updateInvoiceDetail */ export const update = updateInvoiceDetail;
+/** @deprecated use deleteInvoiceDetail */ export const destroy = deleteInvoiceDetail;

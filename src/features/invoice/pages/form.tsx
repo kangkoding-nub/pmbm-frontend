@@ -10,7 +10,7 @@ import type {
 } from "@/types";
 import { formatCurrency, formatNumber } from "@/utils";
 import { useInstitutionContext } from "@/hooks/useInstitutionContext";
-import { get as getInstitution } from "@/features/institution/services/institution";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 import { store as storeInvoice, update as updateInvoice } from "@/features/invoice/services/invoice";
 import { store as storeInvoiceDetail, get as getInvoiceDetail, update as updateInvoiceDetail } from "@/features/invoice/services/invoiceDetail";
 import { useYearContext } from "@/hooks/useYearContext";
@@ -121,7 +121,7 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
     useEffect(() => {
         const institutionHandle = () => {
             if (institution?.id)
-                getInstitution<InstitutionType>({ id: institution.id - 1 }).then((resp) => {
+                getInstitution<InstitutionType>({ id: String(institution.id - 1) }).then((resp) => {
                     if (resp.length > 0) setInstitutionData(resp);
                 });
         };

@@ -18,7 +18,7 @@ import { getDiscountReport, exportDiscountReport } from "@/features/report/servi
 import { formatCurrency } from "@/utils";
 import type { ColumnType, OptionsType } from "@/types";
 import { useAuthContext } from "@/hooks/useAuthContext.ts";
-import { get as getInstitution } from "@/features/institution/services/institution.ts";
+import { get as getInstitution } from "@/features/institution/services/institution.services";
 
 interface DiscountType {
     id: number;

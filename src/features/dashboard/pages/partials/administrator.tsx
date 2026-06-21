@@ -57,10 +57,10 @@ const Administrator = () => {
         setLoading(true);
         if (year?.id) {
             getDashboardStats({
-                yearId: `${year.id}`
+                yearId: year.id
             })
                 .then((resp) => {
-                    setData(resp);
+                    setData(resp ?? null);
                 })
                 .finally(() => {
                     setLoading(false);
